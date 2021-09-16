@@ -4,7 +4,9 @@ package hmacdrbg
 import (
 	"crypto/hmac"
 	"crypto/sha256"
+	"encoding/binary"
 	"errors"
+	"time"
 )
 
 /**937 bytes (~7500 bits) as per the spec.*/
@@ -74,6 +76,7 @@ func NewHmacDrbg(securityLevelBits int, entropy, personalization []byte) *HmacDr
 		reseedCounter: 1,
 		updateCounter: make([]byte,8),
 	}
+	binary.BigEndian.PutUint64(self.updateCounter, uint64(time.Now().Unix()))
 	
 	//Instantiate
 	//k already holds 0x00.
@@ -183,6 +186,7 @@ func (self *HmacDrbg) Generate(outputBytes []byte) bool {
 
 	// Provide an incrementing additional-input when generating, to provide backtracking resistance.  C.f.
 	// https://link.springer.com/chapter/10.1007%2F978-3-030-17656-3_6
+	// The value isn't secret, but just must vary.
 	self.update(self.updateCounter)
 	self.reseedCounter++
 	
