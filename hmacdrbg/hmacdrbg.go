@@ -76,7 +76,7 @@ func NewHmacDrbg(securityLevelBits int, entropy, personalization []byte) *HmacDr
 		reseedCounter: 1,
 		updateCounter: make([]byte,8),
 	}
-	binary.BigEndian.PutUint64(self.updateCounter, uint64(time.Now().Unix()))
+	binary.LittleEndian.PutUint64(self.updateCounter, uint64(time.Now().Unix()))
 	
 	//Instantiate
 	//k already holds 0x00.
