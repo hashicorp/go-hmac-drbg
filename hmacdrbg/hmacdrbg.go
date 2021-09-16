@@ -22,6 +22,7 @@ type HmacDrbg struct {
 	k, v []byte
 	
 	reseedCounter int
+	updateCounter []byte
 }
 
 /**Read from an arbitrary number of bytes from HmacDrbg efficiently.
@@ -71,6 +72,7 @@ func NewHmacDrbg(securityLevelBits int, entropy, personalization []byte) *HmacDr
 		k: make([]byte, 32),
 		v: make([]byte, 32),
 		reseedCounter: 1,
+		updateCounter: make([]byte,8),
 	}
 	
 	//Instantiate
@@ -125,6 +127,13 @@ func (self *HmacDrbg) update(providedData []byte) {
 		self.k = self._hmac(self.k, msg)
 		self.v = self._hmac(self.k, self.v)
 	}
+
+	for i := len(self.updateCounter)-1; i>=0 ;i-- {
+		self.updateCounter[i]++
+		if self.updateCounter[i] != 0 {
+			break
+		}
+	}
 }
 
 func (self *HmacDrbg) Reseed(entropy []byte) error {
@@ -172,7 +181,9 @@ func (self *HmacDrbg) Generate(outputBytes []byte) bool {
 		nGen += n
 	}
 
-	self.update(nil)
+	// Provide an incrementing additional-input when generating, to provide backtracking resistance.  C.f.
+	// https://link.springer.com/chapter/10.1007%2F978-3-030-17656-3_6
+	self.update(self.updateCounter)
 	self.reseedCounter++
 	
 	return true
