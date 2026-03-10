@@ -1,3 +1,6 @@
+// Copyright IBM Corp. 2017, 2025
+// SPDX-License-Identifier: MIT
+
 package hmacdrbg
 
 //Ported from: https://github.com/fpgaminer/python-hmac-drbg
